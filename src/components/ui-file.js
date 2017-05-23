@@ -7,6 +7,7 @@ const LOG = limit.Logger.get('File');
 export class File extends limit.Component {
 
     static get tagName() { return 'ui-file'; }
+    
     get template() { return template; }
     get resource() { return { label: '', placeholder: '', value: '', labelWidth: LAYOUT.labelWidth }; }
 

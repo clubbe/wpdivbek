@@ -7,6 +7,7 @@ const LOG = limit.Logger.get('Input');
 export class Input extends limit.Component {
 
     static get tagName() { return 'ui-input'; }
+    
     get template() { return template; }
     get resource() { return { label: '', placeholder: '', type: '', value: '', labelWidth: LAYOUT.labelWidth }; }
 

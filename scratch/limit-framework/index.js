@@ -23,7 +23,7 @@ class Component extends HTMLElement {
     constructor() {
         super();
         if (!this.template) this.template = '<div>implement <code>get template() {return\'<div>...</div>\';}</code></div>';
-        else if (this.resource) this.model = observer.observe(this.resource, (change) => { this.render(); });
+        else if (this.resource) this.model = observer.observe(this.resource, () => { this.render(); }, { deliveryMode: 'singleOperation', reportLength: false });
         this.render();
     }
 

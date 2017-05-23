@@ -6,6 +6,7 @@ const LOG = limit.Logger.get('Schedule');
 export class Schedule extends limit.Component {
 
     static get tagName() { return 'ui-schedule'; }
+    
     get template() { return template; }
     get resource() { return { startTime: '00:00', displayDate: 'none', snapshotCycleType: undefined, snapshotCycleDate: undefined, snapshotCycleOptions: ['Every day', 'Once a week', 'Twice a month'] }; }
 
