@@ -8,7 +8,7 @@ export class File extends limit.Component {
 
     static get tagName() { return 'ui-file'; }
     get template() { return template; }
-    get resource() { return viewModel(this.model); }
+    get resource() { return { label: '', placeholder: '', value: '', labelWidth: LAYOUT.labelWidth }; }
 
     created() {
 
@@ -28,13 +28,4 @@ export class File extends limit.Component {
     set value(value) {
         this.model.value = value;
     }
-}
-
-function viewModel(model) {
-    return {
-        label: model ? model.label : '',
-        placeholder: model ? model.placeholder : '',
-        value: model ? model.value : '',
-        labelWidth: LAYOUT.labelWidth
-    };
 }

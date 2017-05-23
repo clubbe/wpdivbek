@@ -8,19 +8,12 @@ export class Restore extends limit.Component {
 
     static get tagName() { return 'ui-restore'; }
     get template() { return template; }
-    get resource() { return viewModel(this.model); }
+    get resource() { return { restorePath: '' }; }
 
     created() {
         this.find('#restore').onclick = () => {
             this.model.restorePath = this.find('ui-file').value;
-            // LOG.info('viewModel = ', viewModel(this.model));
-            Sync.restore(viewModel(this.model));
+            Sync.restore(this.model.restorePath);
         };
     }
-}
-
-function viewModel(model) {
-    return {
-        restorePath: model ? model.restorePath : ''
-    };
 }

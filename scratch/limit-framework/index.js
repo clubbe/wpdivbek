@@ -20,15 +20,15 @@ const support = {
 
 class Component extends HTMLElement {
 
-    constructor(template) {
+    constructor() {
         super();
-        if (!this.template) this.template = template;
-        if (this.resource) this.model = observer.observe(this.resource, (change) => { this.render(); });
+        if (!this.template) this.template = '<div>implement <code>get template() {return\'<div>...</div>\';}</code></div>';
+        else if (this.resource) this.model = observer.observe(this.resource, (change) => { this.render(); });
         this.render();
     }
 
     render() {
-        let template = parse(this.template, this.resource);
+        let template = parse(this.template, this.model);
         appendTemplate(this, template);
         if (this.isAttached) return;
         this.isAttached = true;

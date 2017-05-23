@@ -10,8 +10,9 @@ const LOG = limit.Logger.get('BackupList');
 export class BackupList extends limit.Component {
 
     static get tagName() { return 'ui-backup-list'; }
+    
     get template() { return template; }
-    get resource() { return viewModel(this.model); }
+    get resource() { return { files: FILES.values }; }
 
     created() {
 
@@ -48,10 +49,6 @@ export class BackupList extends limit.Component {
             }
         });
     }
-}
-
-function viewModel(model) {
-    return { files: model ? model.files : FILES.values };
 }
 
 function formatSize(value) {

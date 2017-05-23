@@ -1,11 +1,14 @@
 import limit from 'limit-framework';
 import template from './ui-menu.html';
 
+const LOG = limit.Logger.get('Menu');
+
 export class Menu extends limit.Component {
 
     static get tagName() { return 'ui-menu'; }
+
     get template() { return template; }
-    get resource() { return viewModel(this.model); }
+    get resource() { return { displayBackup: 'none', displayRestore: 'none', displaySchedule: 'none' }; }
 
     created() {
         this.find('#backup').onclick = () => { this.showBackupView() };
@@ -31,12 +34,4 @@ export class Menu extends limit.Component {
         this.model.displayRestore = 'none';
         this.model.displaySchedule = '';
     }
-}
-
-function viewModel(model) {
-    return {
-        displayBackup: model ? model.displayBackup : 'none',
-        displayRestore: model ? model.displayRestore : 'none',
-        displaySchedule: model ? model.displaySchedule : 'none'
-    };
 }

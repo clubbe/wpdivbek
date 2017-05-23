@@ -7,7 +7,7 @@ export class Schedule extends limit.Component {
 
     static get tagName() { return 'ui-schedule'; }
     get template() { return template; }
-    get resource() { return viewModel(this.model); }
+    get resource() { return { startTime: '00:00', displayDate: 'none', snapshotCycleType: undefined, snapshotCycleDate: undefined, snapshotCycleOptions: ['Every day', 'Once a week', 'Twice a month'] }; }
 
     created() {
 
@@ -29,21 +29,7 @@ export class Schedule extends limit.Component {
             this.model.startTime = startTime.value;
             this.model.snapshotCycleType = snapshotCycleType.value;
             this.model.snapshotCycleDate = snapshotCycleDate.value;
-            LOG.info('viewModel = ', viewModel(this.model));
+            LOG.info('this.model = ', this.model);
         };
     }
-
-    isBasic() {
-        return;
-    }
-}
-
-function viewModel(model) {
-    return {
-        startTime: model ? model.startTime : '00:00',
-        displayDate: model ? model.displayDate : 'none',
-        snapshotCycleType: model ? model.snapshotCycleType : '',
-        snapshotCycleDate: model ? model.snapshotCycleDate : '',
-        snapshotCycleOptions: ['Every day', 'Once a week', 'Twice a month']
-    };
 }

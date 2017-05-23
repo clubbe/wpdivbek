@@ -8,24 +8,17 @@ const LOG = limit.Logger.get('Backup');
 export class Backup extends limit.Component {
 
     static get tagName() { return 'ui-backup'; }
+    
     get template() { return template; }
-    // get resource() { return viewModel(); }
 
     created() {
+
+        this.find('#backup').onclick = () => {
+            Sync.backup({ files: FILES.values });
+        };
 
         limit.EVENTS.on('files:dropped', (files) => {
             limit.EVENTS.emit('files:added', files);
         });
-
-        this.find('#backup').onclick = () => {
-            // LOG.info('viewModel = ', viewModel());
-            Sync.backup(viewModel());
-        };
     }
-}
-
-function viewModel(model) {
-    return {
-        files: FILES.values
-    };
 }

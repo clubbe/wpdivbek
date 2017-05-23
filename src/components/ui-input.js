@@ -8,7 +8,7 @@ export class Input extends limit.Component {
 
     static get tagName() { return 'ui-input'; }
     get template() { return template; }
-    get resource() { return viewModel(this.model); }
+    get resource() { return { label: '', placeholder: '', type: '', value: '', labelWidth: LAYOUT.labelWidth }; }
 
     created() {
         this.model.label = this.attr('ui-label');
@@ -28,14 +28,4 @@ export class Input extends limit.Component {
     set value(value) {
         this.model.value = value;
     }
-}
-
-function viewModel(model) {
-    return {
-        label: model ? model.label : '',
-        placeholder: model ? model.placeholder : '',
-        type: model ? model.type : 'text',
-        value: model ? model.value : '',
-        labelWidth: LAYOUT.labelWidth
-    };
 }

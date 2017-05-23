@@ -8,7 +8,7 @@ export class Select extends limit.Component {
 
     static get tagName() { return 'ui-select'; }
     get template() { return template; }
-    get resource() { return viewModel(this.model); }
+    get resource() { return { label: '', placeholder: '', value: '', labelWidth: LAYOUT.labelWidth }; }
 
     created() {
 
@@ -41,14 +41,4 @@ export class Select extends limit.Component {
             onchange();
         });
     }
-}
-
-function viewModel(model) {
-    return {
-        label: model ? model.label : '',
-        placeholder: model ? model.placeholder : '',
-        value: model ? model.value : '',
-        options: model ? model.options : [],
-        labelWidth: LAYOUT.labelWidth
-    };
 }
