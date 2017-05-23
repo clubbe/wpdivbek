@@ -1,0 +1,22 @@
+{
+  "name": "wpdivbek",
+  "description": "welkom poes die is vir backup en kak",
+  "main": "app/background.js",
+  "authors": [
+    "C Lubbe <carel@zailab.com>"
+  ],
+  "license": "MIT",
+  "moduleType": [],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "semantic": "semantic-ui#2.2.10",
+    "mustache.js": "mustache#^2.3.0"
+  }
+}

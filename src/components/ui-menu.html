@@ -1,0 +1,22 @@
+<style>
+    @import "components/semantic/dist/semantic.css";
+</style>
+<div class="ui top fixed menu">
+    <a class="item" id="backup">
+        <i class="huge upload icon"></i> <strong>Backup</strong>
+    </a>
+    <a class="item" id="restore">
+        <i class="huge download icon"></i> <strong>Restore</strong>
+    </a>
+    <a class="item" id="schedule">
+        <i class="huge calendar icon"></i> <strong>Schedule</strong>
+    </a>
+    <!--<a class="right aligned item" id="schedule">
+        <i class="huge calendar icon"></i> <strong>Schedule</strong>
+    </a>-->
+</div>
+<div class="ui basic attached segment" id="panel" style="padding-top:100px;padding-bottom:60px;border-bottom:0px">
+    <ui-backup style="display:{{displayBackup}}"></ui-backup>
+    <ui-restore style="display:{{displayRestore}}"></ui-restore>
+    <ui-schedule style="display:{{displaySchedule}}"></ui-schedule>
+</div>

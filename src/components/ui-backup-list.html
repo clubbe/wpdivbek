@@ -1,0 +1,26 @@
+<style>
+    @import "components/semantic/dist/semantic.css";
+</style>
+<div class="ui cards">
+    {{#files}}
+    <div class="ui fluid card">
+        <div class="content">
+            <i class="right floated remove link red colored icon" id="remove-{{uuid}}"></i>
+            <div class="header">
+                <i class="folder icon"></i> {{absolutePath}}
+            </div>
+            <div class="description">
+                <p></p>
+            </div>
+        </div>
+        <div class="extra content">
+            <span class="left floated">
+                <i class="time icon"></i> {{timestamp}}
+            </span>
+            <span class="right floated">
+                 {{size}} <i class="database icon"></i>
+            </span>
+        </div>
+    </div>
+    {{/files}}
+</div>

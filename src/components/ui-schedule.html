@@ -1,0 +1,21 @@
+<style>
+    @import "components/semantic/dist/semantic.css";
+</style>
+
+<label><strong>Configure the backup schedule</strong></label>
+<div class="ui divider"></div>
+
+<ui-input ui-label="Start Time" ui-placeholder="What time should the backup start?" ui-type="time" ui-value="{{startTime}}"></ui-input>
+<div class="ui hidden divider" style="margin:4px"></div>
+
+<ui-select ui-label="Snapshot Cycle" ui-placeholder="How often should a snapshot be taken?" ui-options="{{snapshotCycleOptions}}"></ui-select>
+<div class="ui hidden divider" style="margin:4px"></div>
+
+<ui-input id="snapshotCycleDate" style="display:{{displayDate}}" ui-label="Snapshot Date" ui-placeholder="What day should the cycle start?" ui-type="date" ui-value="{{snapshotCycleDate}}"></ui-input>
+<div class="ui hidden divider" style="margin:4px;display:{{displayDate}}"></div>
+
+<div class="ui bottom fixed menu">
+    <a class="item" id="schedule">
+        <i class="save icon"></i> <strong>Save Schedule</strong>
+    </a>
+</div>
