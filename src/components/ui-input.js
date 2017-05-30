@@ -7,7 +7,7 @@ const LOG = limit.Logger.get('Input');
 export class Input extends limit.Component {
 
     static get tagName() { return 'ui-input'; }
-    
+
     get template() { return template; }
     get resource() { return { label: '', placeholder: '', type: '', value: '', labelWidth: LAYOUT.labelWidth }; }
 
@@ -21,7 +21,7 @@ export class Input extends limit.Component {
     get value() {
         let input = this.find(`input[type=${this.model.type}]`);
         if (this.model.type === 'date') {
-            return input.valueAsDate ? input.valueAsDate + '' : undefined;
+            return input.valueAsDate ? { dayOfWeek: input.valueAsDate.getDay(), dayOfMonth: input.valueAsDate.getDate(), date: input.value } : undefined;
         }
         return input.value;
     }

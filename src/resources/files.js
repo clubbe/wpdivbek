@@ -1,4 +1,4 @@
-const MAP = new Map();
+const MAP = open();
 
 export class FILES {
 
@@ -34,11 +34,25 @@ export class FILES {
         return new Promise((resolve) => {
             let record = Object.assign({}, file);
             MAP.set(id, record);
+            flush();
             resolve(record);
         });
     }
 
     static delete(id) {
         MAP.delete(id);
+        flush();
     }
+}
+
+function open() {
+    if (localStorage['FILES']) {
+        return new Map(JSON.parse(localStorage['FILES']));
+    } else {
+        return new Map();
+    }
+}
+
+function flush() {
+    localStorage['FILES'] = JSON.stringify([...MAP]);
 }

@@ -8,7 +8,12 @@
         <option value="{{.}}">{{.}}</option>
         {{/placeholder}}
         {{#options}}
-        <option value="{{.}}">{{.}}</option>
+        {{#selected}}
+        <option value="{{value}}" selected>{{value}}</option>
+        {{/selected}}
+        {{^selected}}
+        <option value="{{value}}">{{value}}</option>
+        {{/selected}}
         {{/options}}
     </select>
 </div>

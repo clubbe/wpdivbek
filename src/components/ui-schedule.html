@@ -2,17 +2,22 @@
     @import "components/semantic/dist/semantic.css";
 </style>
 
-<label><strong>Configure the backup schedule</strong></label>
+<label><strong>Configure the backup schedule</strong>{{#error}}<strong style="color:red"> - {{error}}</strong>{{/error}}</label>
 <div class="ui divider"></div>
 
 <ui-input ui-label="Start Time" ui-placeholder="What time should the backup start?" ui-type="time" ui-value="{{startTime}}"></ui-input>
 <div class="ui hidden divider" style="margin:4px"></div>
 
-<ui-select ui-label="Snapshot Cycle" ui-placeholder="How often should a snapshot be taken?" ui-options="{{snapshotCycleOptions}}"></ui-select>
+<ui-select ui-label="Snapshot Cycle" ui-placeholder="How often should a snapshot be taken?" ui-options="{{snapshotCycleOptions}}" ui-value="{{snapshotCycleType}}"></ui-select>
 <div class="ui hidden divider" style="margin:4px"></div>
 
 <ui-input id="snapshotCycleDate" style="display:{{displayDate}}" ui-label="Snapshot Date" ui-placeholder="What day should the cycle start?" ui-type="date" ui-value="{{snapshotCycleDate}}"></ui-input>
 <div class="ui hidden divider" style="margin:4px;display:{{displayDate}}"></div>
+
+<div class="ui divider"></div>
+
+<div class="ui top attached secondary segment header">Current Schedule</div>
+<div class="ui bottom attached segment">Backup <strong>{{snapshotCycleType}}{{#snapshotCycle}}</strong> on day <strong>{{snapshotCycle}}{{/snapshotCycle}}</strong> at <strong>{{startTime}}</strong></div>
 
 <div class="ui bottom fixed menu">
     <a class="item" id="schedule">
