@@ -2,31 +2,13 @@ const OBJECT = open();
 
 export class SCHEDULE {
 
-  static set startTime(startTime) {
-    OBJECT.startTime = startTime;
+  static get job() {
+    return OBJECT.job;
+  }
+
+  static set job(job) {
+    OBJECT.job = job;
     flush();
-  }
-
-  static set snapshotCycleType(snapshotCycleType) {
-    OBJECT.snapshotCycleType = snapshotCycleType;
-    flush();
-  }
-
-  static set snapshotCycleDate(snapshotCycleDate) {
-    OBJECT.snapshotCycleDate = snapshotCycleDate;
-    flush();
-  }
-
-  static get startTime() {
-    return OBJECT.startTime;
-  }
-
-  static get snapshotCycleType() {
-    return OBJECT.snapshotCycleType;
-  }
-
-  static get snapshotCycleDate() {
-    return OBJECT.snapshotCycleDate;
   }
 }
 

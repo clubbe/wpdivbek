@@ -1,0 +1,11 @@
+<style>
+    @import "components/semantic/dist/semantic.css";
+</style>
+<label><strong>Select folder and snapshot for restore</strong></label>
+<div class="ui divider"></div>
+<ui-file ui-label="Restore To Folder" ui-placeholder="Where should the restore go?" ui-value="{{restorePath}}"></ui-file>
+<div class="ui bottom fixed menu">
+    <a class="item" id="restore">
+        <i class="rocket icon"></i> <strong>Start Restore</strong>
+    </a>
+</div>

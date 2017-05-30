@@ -11,68 +11,26 @@ export class Schedule extends limit.Component {
     get template() { return template; }
     get resource() {
         return {
-            startTime: SCHEDULE.startTime || '00:00',
-            snapshotCycleType: SCHEDULE.snapshotCycleType,
-            snapshotCycleDate: SCHEDULE.snapshotCycleDate.date,
-            snapshotCycle: SCHEDULE.snapshotCycleDate.day,
-            displayDate: 'none',
-            snapshotCycleOptions: ['Every day', 'Once a week', 'Once a month'],
+            job: SCHEDULE.job || '* * * * * *',
             error: ''
         };
     }
 
     created() {
 
-        let startTime = this.find('ui-input');
-        let snapshotCycleType = this.find('ui-select');
-        let snapshotCycleDate = this.find('#snapshotCycleDate');
+        this.find('#schedule').onclick = (event) => {
 
-        snapshotCycleType.onchange = () => {
-
-            this.model.displayDate = '';
-            if (['Once a week', 'Once a month'].indexOf(snapshotCycleType.value) === -1) {
-                this.model.displayDate = 'none';
-                this.model.snapshotCycleDate = '';
-                snapshotCycleDate.value = '';
-            }
-        }
-
-        this.find('#schedule').onclick = () => {
+            let job = this.find('ui-input');
+            let split = job.value.split(' ');
 
             this.model.error = '';
-
-            let day = false;
-            if (snapshotCycleDate && snapshotCycleDate.value) {
-                if (snapshotCycleType.value === 'Once a week') {
-                    day = snapshotCycleDate.value.dayOfWeek;
-                }
-                if (snapshotCycleType.value === 'Once a month') {
-                    day = snapshotCycleDate.value.dayOfMonth;
-                }
-            }
-
-            let date = snapshotCycleDate && snapshotCycleDate.value ? snapshotCycleDate.value.date : undefined;
-            if (['Once a week', 'Once a month'].indexOf(snapshotCycleType.value) !== -1 && !date) {
-                this.model.error = 'Date is required for selected cycle';
+            if (!job.value || split.length !== 6 || (split.length === 6 && split[split.length - 1] === '')) {
+                this.model.error = 'Nope';
+                job.select();
             } else {
-
-                this.model.startTime = startTime.value;
-                this.model.snapshotCycleType = snapshotCycleType.value;
-                this.model.snapshotCycleDate = date;
-                this.model.snapshotCycle = day;
-
-                SCHEDULE.startTime = startTime.value;
-                SCHEDULE.snapshotCycleType = snapshotCycleType.value;
-                SCHEDULE.snapshotCycleDate = {
-                    date: date,
-                    day: this.model.snapshotCycle
-                };
+                SCHEDULE.job = job.value;
+                this.model.job = job.value;
             }
-        };
-
-        this.model.displayDate = '';
-        if (['Once a week', 'Once a month'].indexOf(this.model.snapshotCycleType) === -1) {
-            this.model.displayDate = 'none';
         }
     }
 }

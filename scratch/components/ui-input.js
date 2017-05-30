@@ -18,10 +18,6 @@ export class Input extends limit.Component {
         this.model.value = this.attr('ui-value');
     }
 
-    select() {
-        this.find(`input[type=${this.model.type}]`).select();
-    }
-
     get value() {
         let input = this.find(`input[type=${this.model.type}]`);
         if (this.model.type === 'date') {
