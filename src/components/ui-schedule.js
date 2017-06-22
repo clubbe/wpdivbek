@@ -1,6 +1,7 @@
 import limit from 'limit-framework';
 import template from './ui-schedule.html';
 import { SCHEDULE } from '../resources/schedule';
+import { Runner } from '../runner';
 
 const LOG = limit.Logger.get('Schedule');
 
@@ -30,6 +31,7 @@ export class Schedule extends limit.Component {
             } else {
                 SCHEDULE.job = job.value;
                 this.model.job = job.value;
+                Runner.init();
             }
         }
     }

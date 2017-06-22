@@ -1,5 +1,6 @@
 import limit from 'limit-framework';
 import COMPONENTS from './components/index';
+import { Runner } from './runner';
 
 limit.Logger.useDefaults();
 limit.Logger.setLevel(limit.Logger.INFO);
@@ -10,6 +11,8 @@ limit.setViewModelRenderer((view, model) => {
 });
 
 limit.registerComponents(COMPONENTS);
+
+Runner.init();
 
 document.body.ondragover = () => {
     return false;
