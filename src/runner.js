@@ -9,7 +9,7 @@ const LOG = limit.Logger.get('Runner');
 export class Runner {
 
   static init() {
-    LOG.info('files=', FILES.values);
+    
     if (this.job) {
       this.job.cancel();
     }

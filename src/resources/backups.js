@@ -12,7 +12,10 @@ export class BACKUPS {
                 reject(new Error('must be unique'));
                 return;
             }
-            this.set(id, file).then((record) => { resolve(record) });
+            let record = Object.assign({}, file);
+            MAP.set(id, record);
+            flush();
+            resolve(record);
         });
     }
 
@@ -31,7 +34,11 @@ export class BACKUPS {
     }
 
     static set(id, file) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
+            if (!this.has(id)) {
+                reject(new Error('must not be unique'));
+                return;
+            }
             let record = Object.assign({}, file);
             MAP.set(id, record);
             flush();
@@ -51,6 +58,12 @@ export class BACKUPS {
             }
         }
         return null;
+    }
+
+    static findAndDelete(uuid) {
+        let record = this.find(uuid);
+        this.delete(record.group);
+        return Object.assign({}, record);
     }
 }
 

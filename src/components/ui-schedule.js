@@ -10,18 +10,39 @@ export class Schedule extends limit.Component {
     static get tagName() { return 'ui-schedule'; }
 
     get template() { return template; }
-    get resource() {
-        return {
-            job: SCHEDULE.job || '* * * * * *',
-            error: ''
-        };
-    }
+    get resource() { return { job: '* * * * * *', error: '' }; }
 
     created() {
 
+        limit.EVENTS.on('backup:selected', (backup) => {
+            this.selectedBackup = backup;
+            SCHEDULE.get(backup.group)
+                .then((record) => {
+                    LOG.info('got = ', record);
+                    let job = this.query('ui-input');
+                    job.value = record.job;
+                })
+                .catch((error) => {
+                    let schedule = {
+                        job: this.model.job,
+                        group: this.selectedBackup.group
+                    }
+                    SCHEDULE.put(schedule.group, schedule);
+                });
+        });
+
+        limit.EVENTS.on('backup:removed', (backup) => {
+            SCHEDULE.delete(backup.group);
+        });
+
+        limit.EVENTS.on('home:selected', (backup) => {
+            this.selectedBackup = undefined;
+            this.model.job = '* * * * * *';
+        });
+
         this.query('#schedule').onclick = (event) => {
 
-            let job = this.find('ui-input');
+            let job = this.query('ui-input');
             let split = job.value.split(' ');
 
             this.model.error = '';
@@ -29,8 +50,12 @@ export class Schedule extends limit.Component {
                 this.model.error = 'Nope';
                 job.select();
             } else {
-                SCHEDULE.job = job.value;
                 this.model.job = job.value;
+                let schedule = {
+                    job: this.model.job,
+                    group: this.selectedBackup.group
+                }
+                SCHEDULE.set(schedule.group, schedule);
                 Runner.init();
             }
         };

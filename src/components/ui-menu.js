@@ -12,10 +12,21 @@ export class Menu extends limit.Component {
 
     created() {
 
-        this.query('#home').onclick = () => { this.showHomeView() };
-        this.query('#backup').onclick = () => { this.showBackupView() };
-        this.query('#restore').onclick = () => { this.showRestoreView() };
-        this.query('#schedule').onclick = () => { this.showScheduleView() };
+        this.parentElement.onclick = () => {
+            limit.EVENTS.emit('body:clicked');
+        };
+
+        this.elements = {
+            home: this.query('#home'),
+            backup: this.query('#backup'),
+            restore: this.query('#restore'),
+            schedule: this.query('#schedule')
+        };
+
+        this.elements.home.onclick = () => { this.showHomeView() };
+        this.elements.backup.onclick = () => { this.showBackupView() };
+        this.elements.restore.onclick = () => { this.showRestoreView() };
+        this.elements.schedule.onclick = () => { this.showScheduleView() };
 
         this.showHomeView();
 
@@ -23,6 +34,8 @@ export class Menu extends limit.Component {
             this.model.selectedBackup = backup;
             this.model.displayTabs = '';
             this.showBackupView();
+
+            this.elements.home.className = this.elements.home.className.replace(' active', '');
         });
     }
 
@@ -34,6 +47,12 @@ export class Menu extends limit.Component {
         this.model.selectedBackup = '';
         this.model.displayTabs = 'none';
         limit.EVENTS.emit('home:selected');
+
+        this.elements.home.className += ' active';
+
+        this.elements.backup.className = this.elements.backup.className.replace(' active', '');
+        this.elements.restore.className = this.elements.restore.className.replace(' active', '');
+        this.elements.schedule.className = this.elements.schedule.className.replace(' active', '');
     }
 
     showBackupView() {
@@ -41,6 +60,10 @@ export class Menu extends limit.Component {
         this.model.displayBackup = '';
         this.model.displayRestore = 'none';
         this.model.displaySchedule = 'none';
+
+        this.elements.backup.className += ' active';
+        this.elements.restore.className = this.elements.restore.className.replace(' active', '');
+        this.elements.schedule.className = this.elements.schedule.className.replace(' active', '');
     }
 
     showRestoreView() {
@@ -48,6 +71,10 @@ export class Menu extends limit.Component {
         this.model.displayBackup = 'none';
         this.model.displayRestore = '';
         this.model.displaySchedule = 'none';
+
+        this.elements.backup.className = this.elements.backup.className.replace(' active', '');
+        this.elements.restore.className += ' active';
+        this.elements.schedule.className = this.elements.schedule.className.replace(' active', '');
     }
 
     showScheduleView() {
@@ -55,5 +82,9 @@ export class Menu extends limit.Component {
         this.model.displayBackup = 'none';
         this.model.displayRestore = 'none';
         this.model.displaySchedule = '';
+
+        this.elements.backup.className = this.elements.backup.className.replace(' active', '');
+        this.elements.restore.className = this.elements.restore.className.replace(' active', '');
+        this.elements.schedule.className += ' active';
     }
 }

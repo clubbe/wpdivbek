@@ -29,8 +29,6 @@ document.body.ondrop = (e) => {
     return false;
 };
 
-console.log(localStorage);
-
 // let menu = document.createElement('ui-menu');
 // console.log('menu = ', menu);
 

@@ -43,6 +43,22 @@ export class FILES {
         MAP.delete(id);
         flush();
     }
+
+    static find(group) {
+        let records = [];
+        for (let record of this.values) {
+            if (record.group === group) {
+                records.push(Object.assign({}, record));
+            }
+        }
+        return records;
+    }
+
+    static findAndDelete(group) {
+        for (let file of this.find(group)) {
+            this.delete(file.absolutePath);
+        }
+    }
 }
 
 function open() {

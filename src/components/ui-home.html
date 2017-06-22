@@ -3,17 +3,20 @@
 </style>
 <label for="import"><strong>Create backup groups that contain individual backup folders, restore and schedule options</strong></label>
 <div class="ui divider"></div>
-<ui-input ui-label="Backup Group" ui-placeholder="What do you want to call this backup group?" ui-type="text" ui-value="{{group}}" ui-icon="plus"></ui-input>
+<ui-input ui-label="Backup Group" ui-placeholder="What should the backup group be named?" ui-type="text" ui-value="{{group}}"
+    ui-icon="plus"></ui-input>
 <div class="ui relaxed divided list">
-  {{#backups}}
-  <div class="item">
-      <div class="right floated content">
-          <i class="big write grey link icon" id="edit-{{uuid}}"></i>
-      </div>
-      <i class="big caret right grey icon"></i>
-      <div class="middle aligned content">
-      {{group}}
-      </div>
-  </div>
-  {{/backups}}
+    {{#backups}}
+    <div class="item">
+        <div class="right floated content">
+            <i class="big write grey link icon" id="edit-{{uuid}}"></i>
+            <i class="big trash green link icon" id="recycle-{{uuid}}"></i>
+            <i class="big remove red link icon" id="remove-{{uuid}}" style="display:none"></i>
+        </div>
+        <i class="large caret right grey icon"></i>
+        <div class="middle aligned content">
+            {{group}}
+        </div>
+    </div>
+    {{/backups}}
 </div>

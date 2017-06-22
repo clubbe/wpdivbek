@@ -3,6 +3,7 @@ import template from './ui-backup-list.html';
 import jetpack from 'fs-jetpack';
 import getSize from 'get-folder-size';
 import { FILES } from '../resources/files';
+import { BACKUPS } from '../resources/backups';
 import uuid from 'uuid';
 
 const LOG = limit.Logger.get('BackupList');
@@ -10,9 +11,9 @@ const LOG = limit.Logger.get('BackupList');
 export class BackupList extends limit.Component {
 
     static get tagName() { return 'ui-backup-list'; }
-    
+
     get template() { return template; }
-    get resource() { return { files: FILES.values }; }
+    get resource() { return { files: [] }; }
 
     created() {
 
@@ -27,16 +28,22 @@ export class BackupList extends limit.Component {
                     }
                     index++;
                 }
-                this.model.files = FILES.values;
+                this.model.files = FILES.find(this.selectedBackup.group);
             }
         }
 
         limit.EVENTS.on('backup:selected', (backup) => {
             this.selectedBackup = backup;
+            this.model.files = FILES.find(backup.group);
+        });
+
+        limit.EVENTS.on('backup:removed', (backup) => {
+            FILES.findAndDelete(backup.group);
         });
 
         limit.EVENTS.on('home:selected', (backup) => {
             this.selectedBackup = undefined;
+            this.model.files = [];
         });
 
         limit.EVENTS.on('files:added', (filesAdded) => {
@@ -47,13 +54,14 @@ export class BackupList extends limit.Component {
             for (let file of filesAdded) {
                 file = jetpack.inspect(file.path, { times: true, absolutePath: true });
                 if (file.type === 'file' || FILES.has(file.absolutePath)) {
-                    return;
+                    continue;
                 }
                 getSize(file.absolutePath, (err, fileSize) => {
                     if (err) { throw err; }
                     file.uuid = uuid.v4();
                     file.size = formatSize(fileSize);
                     file.timestamp = formatTime(file.modifyTime + '');
+                    file.group = this.selectedBackup.group;
                     FILES.put(file.absolutePath, file)
                         .then((record) => { this.model.files.push(record); })
                         .catch((error) => { LOG.error(error); });
