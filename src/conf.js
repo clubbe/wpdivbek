@@ -19,7 +19,7 @@ export class Conf {
         console.log('Creating config file');
       fs.writeFileSync(file, 'id=your_AWS_accessKeyId\r\nkey=your_AWS_secretAccessKey');
     }
-
+    
     let data = fs.readFileSync(file, { encoding: 'utf8' });
     let rows = data.split('\r\n');
     let conf = {};
