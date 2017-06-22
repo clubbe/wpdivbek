@@ -7,7 +7,7 @@ const LOG = limit.Logger.get('File');
 export class File extends limit.Component {
 
     static get tagName() { return 'ui-file'; }
-    
+
     get template() { return template; }
     get resource() { return { label: '', placeholder: '', value: '', labelWidth: LAYOUT.labelWidth }; }
 
@@ -19,7 +19,9 @@ export class File extends limit.Component {
 
         let file = this.find('input[type=file]');
         file.onchange = () => { this.model.value = file.files[0].path; };
-        this.find('.ui.icon.button').onclick = () => { file.click(); };
+        this.find('.ui.icon.button').then((button) => {
+            button.onclick = () => { file.click(); };
+        });
     }
 
     get value() {

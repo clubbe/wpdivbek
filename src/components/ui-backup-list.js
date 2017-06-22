@@ -31,7 +31,19 @@ export class BackupList extends limit.Component {
             }
         }
 
+        limit.EVENTS.on('backup:selected', (backup) => {
+            this.selectedBackup = backup;
+        });
+
+        limit.EVENTS.on('home:selected', (backup) => {
+            this.selectedBackup = undefined;
+        });
+
         limit.EVENTS.on('files:added', (filesAdded) => {
+            if (!this.selectedBackup) {
+                LOG.warn('No backup group selected!');
+                return;
+            }
             for (let file of filesAdded) {
                 file = jetpack.inspect(file.path, { times: true, absolutePath: true });
                 if (file.type === 'file' || FILES.has(file.absolutePath)) {
@@ -44,7 +56,7 @@ export class BackupList extends limit.Component {
                     file.timestamp = formatTime(file.modifyTime + '');
                     FILES.put(file.absolutePath, file)
                         .then((record) => { this.model.files.push(record); })
-                        .catch((error) => { console.log(error); });
+                        .catch((error) => { LOG.error(error); });
                 });
             }
         });

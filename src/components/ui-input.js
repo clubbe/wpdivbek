@@ -9,28 +9,36 @@ export class Input extends limit.Component {
     static get tagName() { return 'ui-input'; }
 
     get template() { return template; }
-    get resource() { return { label: '', placeholder: '', type: '', value: '', labelWidth: LAYOUT.labelWidth }; }
+    get resource() { return { label: '', placeholder: '', type: '', value: '', icon: '', inputType: '', labelWidth: LAYOUT.labelWidth }; }
 
     created() {
         this.model.label = this.attr('ui-label');
         this.model.placeholder = this.attr('ui-placeholder');
         this.model.type = this.attr('ui-type');
         this.model.value = this.attr('ui-value');
+        this.model.icon = this.attr('ui-icon');
+        this.model.inputType = this.model.icon ? 'action' : '';
+        this.input = this.query(`input[type=${this.model.type}]`);
     }
 
     select() {
-        this.find(`input[type=${this.model.type}]`).select();
+        this.input.select();
     }
 
     get value() {
-        let input = this.find(`input[type=${this.model.type}]`);
         if (this.model.type === 'date') {
-            return input.valueAsDate ? { dayOfWeek: input.valueAsDate.getDay(), dayOfMonth: input.valueAsDate.getDate(), date: input.value } : undefined;
+            return this.input.valueAsDate ? { dayOfWeek: this.input.valueAsDate.getDay(), dayOfMonth: this.input.valueAsDate.getDate(), date: this.input.value } : undefined;
         }
-        return input.value;
+        return this.input.value;
     }
 
     set value(value) {
         this.model.value = value;
+    }
+
+    onaction(callback) {
+        this.find('#action').then((action) => {
+            action.onclick = () => { callback() };
+        });
     }
 }

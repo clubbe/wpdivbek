@@ -7,12 +7,14 @@ const LOG = limit.Logger.get('Restore');
 export class Restore extends limit.Component {
 
     static get tagName() { return 'ui-restore'; }
-    
+
     get template() { return template; }
 
     created() {
-        this.find('#restore').onclick = () => {
-            Sync.restore(this.find('ui-file').value);
-        };
+        this.find('#restore').then((restore) => {
+            restore.onclick = () => {
+                Sync.restore(this.find('ui-file').value);
+            };
+        });
     }
 }

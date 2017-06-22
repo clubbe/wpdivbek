@@ -17,20 +17,21 @@ export class Schedule extends limit.Component {
     }
 
     created() {
+        this.find('#schedule').then((schedule) => {
+            schedule.onclick = (event) => {
 
-        this.find('#schedule').onclick = (event) => {
+                let job = this.find('ui-input');
+                let split = job.value.split(' ');
 
-            let job = this.find('ui-input');
-            let split = job.value.split(' ');
-
-            this.model.error = '';
-            if (!job.value || split.length !== 6 || (split.length === 6 && split[split.length - 1] === '')) {
-                this.model.error = 'Nope';
-                job.select();
-            } else {
-                SCHEDULE.job = job.value;
-                this.model.job = job.value;
+                this.model.error = '';
+                if (!job.value || split.length !== 6 || (split.length === 6 && split[split.length - 1] === '')) {
+                    this.model.error = 'Nope';
+                    job.select();
+                } else {
+                    SCHEDULE.job = job.value;
+                    this.model.job = job.value;
+                }
             }
-        }
+        });
     }
 }
