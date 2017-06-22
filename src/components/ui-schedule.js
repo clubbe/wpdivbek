@@ -1,6 +1,7 @@
 import limit from 'limit-framework';
 import template from './ui-schedule.html';
 import { SCHEDULE } from '../resources/schedule';
+import { Runner } from '../runner';
 
 const LOG = limit.Logger.get('Schedule');
 
@@ -17,21 +18,21 @@ export class Schedule extends limit.Component {
     }
 
     created() {
-        this.find('#schedule').then((schedule) => {
-            schedule.onclick = (event) => {
 
-                let job = this.find('ui-input');
-                let split = job.value.split(' ');
+        this.query('#schedule').onclick = (event) => {
 
-                this.model.error = '';
-                if (!job.value || split.length !== 6 || (split.length === 6 && split[split.length - 1] === '')) {
-                    this.model.error = 'Nope';
-                    job.select();
-                } else {
-                    SCHEDULE.job = job.value;
-                    this.model.job = job.value;
-                }
+            let job = this.find('ui-input');
+            let split = job.value.split(' ');
+
+            this.model.error = '';
+            if (!job.value || split.length !== 6 || (split.length === 6 && split[split.length - 1] === '')) {
+                this.model.error = 'Nope';
+                job.select();
+            } else {
+                SCHEDULE.job = job.value;
+                this.model.job = job.value;
+                Runner.init();
             }
-        });
+        };
     }
 }
