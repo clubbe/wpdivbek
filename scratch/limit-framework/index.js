@@ -36,6 +36,19 @@ class Component extends HTMLElement {
     }
 
     find(pattern) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                let element = this.query(pattern);
+                if (element) {
+                    resolve(element);
+                } else {
+                    reject(new Error(`Element not found for ${pattern} in ${this.tagName}`));
+                }
+            }, 1);
+        });
+    }
+
+    query(pattern) {
         return this.shadowRoot.querySelector(pattern);
     }
 
