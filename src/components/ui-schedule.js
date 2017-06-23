@@ -56,7 +56,7 @@ export class Schedule extends limit.Component {
                     group: this.selectedBackup.group
                 }
                 SCHEDULE.set(schedule.group, schedule);
-                Runner.init();
+                Runner.schedule(schedule.group, schedule.job);
             }
         };
     }

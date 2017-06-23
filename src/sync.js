@@ -10,13 +10,13 @@ const LOG = limit.Logger.get('Sync');
 
 export class Sync {
 
-    static backup(backup) {
+    static backup(backup, bucket, callback) {
         let folders = backup.files;
         for (let folder of folders) {
             let params = {
                 localDir: folder.absolutePath,
                 s3Params: {
-                    Bucket: 'zailabbackups',
+                    Bucket: bucket,
                     Prefix: dateFormat(new Date(), 'yyyymmdd')
                 }
             };
@@ -29,6 +29,7 @@ export class Sync {
             });
             uploader.on('end', function () {
                 LOG.info('done uploading');
+                callback && callback();
             });
         }
     }
@@ -58,7 +59,8 @@ export class Sync {
             let params = {
                 s3Params: {
                     Bucket: bucket,
-                    Delimiter: '/'
+                    Delimiter: '/',
+                    MaxKeys: 10
                 }
             };
             LOG.info('list > params = ', params);

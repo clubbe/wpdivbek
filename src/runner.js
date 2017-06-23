@@ -9,13 +9,24 @@ const LOG = limit.Logger.get('Runner');
 export class Runner {
 
   static init() {
-
-    if (this.job) {
-      this.job.cancel();
+    for (let record of SCHEDULE.values) {
+      Runner.schedule(record.group, record.job);
     }
-    this.job = schedule.scheduleJob(SCHEDULE.job, function () {
+  }
 
-      //Sync.backup({ files: FILES.values });
+  static schedule(group, job) {
+    if (!this.jobs) {
+      this.jobs = {};
+    }
+    let runner = this.jobs[group];
+    if (runner) {
+      runner.cancel();
+    }
+    LOG.info('Schedule ', job, ' for ', group);
+    runner = schedule.scheduleJob(job, function () {
+      LOG.info('Backup ', FILES.find(group), ' for ', group);
+      Sync.backup({ files: FILES.find(group) }, group, () => { limit.EVENTS.emit('runner:finished', group); });
     });
+    this.jobs[group] = runner;
   }
 }

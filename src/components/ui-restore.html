@@ -5,6 +5,9 @@
 <div class="ui divider"></div>
 <ui-file ui-label="Restore To Folder" ui-placeholder="Where should the restore go?" ui-value="{{restorePath}}"></ui-file>
 <div class="ui relaxed divided list">
+    {{#loading}}
+    <i class="large notched circle loading icon"></i>
+    {{/loading}}
     {{#snapshots}}
     <div class="item">
         <div class="right floated content">

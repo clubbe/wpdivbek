@@ -9,7 +9,7 @@ export class Restore extends limit.Component {
     static get tagName() { return 'ui-restore'; }
 
     get template() { return template; }
-    get resource() { return { snapshots: [], bucket: '' }; }
+    get resource() { return { snapshots: [], bucket: '', loading: true }; }
 
     created() {
 
@@ -37,13 +37,34 @@ export class Restore extends limit.Component {
             return snapshots().indexOf(this);
         }
 
+        limit.EVENTS.on('runner:finished', (group) => {
+            this.model.loading = true;
+            LOG.info('runner done for ', group, ' > model = ', this.model);
+            if (this.model.bucket && this.model.bucket === group) {
+                Sync.list(group)
+                    .then((snapshots) => {
+                        this.model.snapshots = snapshots;
+                        this.model.loading = false;
+                    })
+                    .catch((err) => {
+                        LOG.error(err);
+                        this.model.loading = false;
+                    });
+            }
+        });
+
         limit.EVENTS.on('backup:selected', (backup) => {
+            this.model.loading = true;
             Sync.list(backup.group)
                 .then((snapshots) => {
                     this.model.snapshots = snapshots;
                     this.model.bucket = backup.group;
+                    this.model.loading = false;
                 })
-                .catch((err) => { LOG.error(err); });
+                .catch((err) => {
+                    LOG.error(err);
+                    this.model.loading = false;
+                });
         });
 
         limit.EVENTS.on('home:selected', (backup) => {
