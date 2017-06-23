@@ -17,7 +17,7 @@ export class File extends limit.Component {
         this.model.placeholder = this.attr('ui-placeholder');
         this.model.value = this.attr('ui-value');
 
-        let file = this.find('input[type=file]');
+        let file = this.query('input[type=file]');
         file.onchange = () => { this.model.value = file.files[0].path; };
         this.find('.ui.icon.button').then((button) => {
             button.onclick = () => { file.click(); };

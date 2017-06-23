@@ -4,8 +4,18 @@
 <label><strong>Select folder and snapshot for restore</strong></label>
 <div class="ui divider"></div>
 <ui-file ui-label="Restore To Folder" ui-placeholder="Where should the restore go?" ui-value="{{restorePath}}"></ui-file>
+<div class="ui relaxed divided list">
+    {{#snapshots}}
+    <div class="item">
+        <div class="right floated content">
+            <i class="big arrow circle down grey link icon" id="restore-{{index}}"></i>
+        </div>
+        <i class="large caret right grey icon"></i>
+        <div class="middle aligned content">
+            {{.}}
+        </div>
+    </div>
+    {{/snapshots}}
+</div>
 <div class="ui bottom fixed menu">
-    <a class="item" id="restore">
-        <i class="rocket icon"></i> <strong>Start Restore</strong>
-    </a>
 </div>

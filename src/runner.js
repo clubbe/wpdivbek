@@ -9,13 +9,13 @@ const LOG = limit.Logger.get('Runner');
 export class Runner {
 
   static init() {
-    
+
     if (this.job) {
       this.job.cancel();
     }
     this.job = schedule.scheduleJob(SCHEDULE.job, function () {
 
-     //Sync.backup({ files: FILES.values });
+      //Sync.backup({ files: FILES.values });
     });
   }
 }

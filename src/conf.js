@@ -8,7 +8,7 @@ const LOG = limit.Logger.get('Conf');
 const dir = path.join(homedir(), '.wpdivbek');
 const file = path.join(homedir(), '.wpdivbek', 's3.conf');
 
-export class Conf {
+class Conf {
 
   constructor() {
 
@@ -23,16 +23,19 @@ export class Conf {
       fs.writeFileSync(file, 'id=your_AWS_accessKeyId\r\nkey=your_AWS_secretAccessKey');
     }
 
-    fs.watchFile(file, (curr, prev) => {
-      let data = fs.readFileSync(file, { encoding: 'utf8' });
-      let rows = data.split('\r\n');
-      let conf = {};
-      for (let i = 0; i < rows.length; i++) {
-        let row = rows[i];
-        let props = row.split('=');
-        this[props[0]] = props[1];
-      }
-      LOG.info(`${file} updated > conf = ${JSON.stringify(this, null, 2)}`);
-    });
+    fs.watchFile(file, (curr, prev) => { update(this); });
+    update(this);
   }
 }
+
+function update(conf) {
+  let data = fs.readFileSync(file, { encoding: 'utf8' });
+  let rows = data.split('\r\n');
+  for (let i = 0; i < rows.length; i++) {
+    let row = rows[i];
+    let props = row.split('=');
+    conf[props[0]] = props[1];
+  }
+}
+
+export const CONF = new Conf(); 
