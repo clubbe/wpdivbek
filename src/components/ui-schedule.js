@@ -16,10 +16,9 @@ export class Schedule extends limit.Component {
 
         limit.EVENTS.on('backup:selected', (backup) => {
             this.selectedBackup = backup;
+            let job = this.query('ui-input');
             SCHEDULE.get(backup.group)
                 .then((record) => {
-                    LOG.info('got = ', record);
-                    let job = this.query('ui-input');
                     job.value = record.job;
                 })
                 .catch((error) => {
@@ -28,6 +27,7 @@ export class Schedule extends limit.Component {
                         group: this.selectedBackup.group
                     }
                     SCHEDULE.put(schedule.group, schedule);
+                    job.value = schedule.job;
                 });
         });
 

@@ -23,7 +23,7 @@ export class SCHEDULE {
   static get(id) {
     return new Promise((resolve, reject) => {
       if (!this.has(id)) {
-        reject(new Error('must not be unique'));
+        reject(new Error('must exist'));
         return;
       }
       resolve(Object.assign({}, MAP.get(id)));
