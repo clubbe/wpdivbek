@@ -10,7 +10,7 @@ const LOG = limit.Logger.get('Sync');
 
 export class Sync {
 
-    static backup(backup, bucket, callback) {
+    static backup(backup, bucket) {
         let folders = backup.files;
         for (let folder of folders) {
             let params = {
@@ -29,7 +29,7 @@ export class Sync {
             });
             uploader.on('end', function () {
                 LOG.info('done uploading');
-                callback && callback();
+                limit.EVENTS.emit('backup:completed', bucket);
             });
         }
     }

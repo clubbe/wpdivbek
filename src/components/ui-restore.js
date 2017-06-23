@@ -37,7 +37,7 @@ export class Restore extends limit.Component {
             return snapshots().indexOf(this);
         }
 
-        limit.EVENTS.on('runner:finished', (group) => {
+        limit.EVENTS.on('backup:completed', (group) => {
             this.model.loading = true;
             LOG.info('runner done for ', group, ' > model = ', this.model);
             if (this.model.bucket && this.model.bucket === group) {

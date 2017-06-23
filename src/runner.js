@@ -15,6 +15,9 @@ export class Runner {
   }
 
   static schedule(group, job) {
+    if (job === '* * * * * *') {
+      return;
+    }
     if (!this.jobs) {
       this.jobs = {};
     }
@@ -25,7 +28,7 @@ export class Runner {
     LOG.info('Schedule ', job, ' for ', group);
     runner = schedule.scheduleJob(job, function () {
       LOG.info('Backup ', FILES.find(group), ' for ', group);
-      Sync.backup({ files: FILES.find(group) }, group, () => { limit.EVENTS.emit('runner:finished', group); });
+      Sync.backup({ files: FILES.find(group) }, group);
     });
     this.jobs[group] = runner;
   }

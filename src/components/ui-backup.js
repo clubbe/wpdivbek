@@ -15,12 +15,20 @@ export class Backup extends limit.Component {
 
         this.find('#backup').then((backup) => {
             backup.onclick = () => {
-                Sync.backup({ files: FILES.values });
+                Sync.backup({ files: FILES.find(this.selectedBackup.group) }, this.selectedBackup.group);
             };
         });
 
         limit.EVENTS.on('files:dropped', (files) => {
             limit.EVENTS.emit('files:added', files);
+        });
+
+        limit.EVENTS.on('backup:selected', (backup) => {
+            this.selectedBackup = backup;
+        });
+
+        limit.EVENTS.on('home:selected', (backup) => {
+            this.selectedBackup = undefined;
         });
     }
 }
