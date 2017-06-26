@@ -3,6 +3,7 @@ import schedule from 'node-schedule';
 import { SCHEDULE } from './resources/schedule';
 import { Sync } from './sync';
 import { FILES } from './resources/files';
+import { LOADER } from './loader';
 
 const LOG = limit.Logger.get('Runner');
 
@@ -28,6 +29,7 @@ export class Runner {
     LOG.info('Schedule ', job, ' for ', group);
     runner = schedule.scheduleJob(job, function () {
       LOG.info('Backup ', FILES.find(group), ' for ', group);
+      LOADER.loading = true;
       Sync.backup({ files: FILES.find(group) }, group);
     });
     this.jobs[group] = runner;

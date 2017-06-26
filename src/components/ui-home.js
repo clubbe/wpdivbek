@@ -14,7 +14,6 @@ export class Home extends limit.Component {
 
   created() {
 
-
     limit.EVENTS.on('body:clicked', () => {
 
       if (this.isRecycleOn) {

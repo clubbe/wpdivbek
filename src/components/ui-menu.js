@@ -1,5 +1,6 @@
 import limit from 'limit-framework';
 import template from './ui-menu.html';
+import { LOADER } from '../loader';
 
 const LOG = limit.Logger.get('Menu');
 
@@ -8,9 +9,17 @@ export class Menu extends limit.Component {
     static get tagName() { return 'ui-menu'; }
 
     get template() { return template; }
-    get resource() { return { selectedBackup: '', displayHome: 'none', displayTabs: 'none', displayBackup: 'none', displayRestore: 'none', displaySchedule: 'none' }; }
+    get resource() { return { selectedBackup: '', displayHome: 'none', displayTabs: 'none', displayBackup: 'none', displayRestore: 'none', displaySchedule: 'none', displayLoader:'none' }; }
 
     created() {
+
+        let loaderElement = this.query('#loader');
+        LOADER.activate = () => {
+            this.model.displayLoader = '';
+        }
+        LOADER.deactivate = () => {
+            this.model.displayLoader = 'none';
+        }
 
         this.parentElement.onclick = () => {
             limit.EVENTS.emit('body:clicked');
@@ -36,10 +45,13 @@ export class Menu extends limit.Component {
             this.showBackupView();
 
             this.elements.home.className = this.elements.home.className.replace(' active', '');
+            
+            LOADER.loading = true;
         });
     }
 
     showHomeView() {
+
         this.model.displayHome = '';
         this.model.displayBackup = 'none';
         this.model.displayRestore = 'none';

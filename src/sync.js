@@ -10,6 +10,7 @@ const LOG = limit.Logger.get('Sync');
 
 export class Sync {
 
+    // TODO(CL): convert to promise - fix references
     static backup(backup, bucket) {
         let folders = backup.files;
         for (let folder of folders) {
@@ -34,6 +35,7 @@ export class Sync {
         }
     }
 
+    // TODO(CL): convert to promise - fix references
     static restore(folder, bucket, prefix) {
         let params = {
             localDir: folder,
@@ -51,6 +53,7 @@ export class Sync {
         });
         downloader.on('end', function () {
             LOG.info('done downloading');
+            limit.EVENTS.emit('restore:completed', bucket);
         });
     }
 
