@@ -26,7 +26,7 @@ export class Restore extends limit.Component {
                 let index = event.path[0].id.replace('restore-', '');
                 LOG.info('index = ', index);
 
-                LOADER.loading = true;
+                LOADER.loading = 'Downloading';
                 Sync.restore(file, this.model.bucket, this.model.snapshots[index]);
             }
         }

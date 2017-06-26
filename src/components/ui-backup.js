@@ -16,7 +16,7 @@ export class Backup extends limit.Component {
 
         this.find('#backup').then((backup) => {
             backup.onclick = () => {
-                LOADER.loading = true;
+                LOADER.loading = 'Uploading';
                 Sync.backup({ files: FILES.find(this.selectedBackup.group) }, this.selectedBackup.group);
             };
         });

@@ -22,13 +22,16 @@ export class Sync {
                 }
             };
             let uploader = s3Client().uploadDir(params);
-            uploader.on('error', function (err) {
+            uploader.on('error', (err) => {
                 LOG.info('unable to backup:', err.stack);
             });
-            uploader.on('progress', function () {
+            uploader.on('progress', () => {
                 LOG.info('progress', uploader.progressAmount, uploader.progressTotal);
+                let progress = uploader.progressTotal ? uploader.progressAmount / uploader.progressTotal * 100 : 0;
+                progress = `${Math.round(progress)}% (${Math.round(uploader.progressAmount/1024/1024)}/${Math.round(uploader.progressTotal/1024/1024)}Mb)`;
+                limit.EVENTS.emit('progress:updated', progress);
             });
-            uploader.on('end', function () {
+            uploader.on('end', () => {
                 LOG.info('done uploading');
                 limit.EVENTS.emit('backup:completed', bucket);
             });
@@ -45,13 +48,16 @@ export class Sync {
             }
         };
         let downloader = s3Client().downloadDir(params);
-        downloader.on('error', function (err) {
+        downloader.on('error', (err) => {
             LOG.info('unable to restore:', err.stack);
         });
-        downloader.on('progress', function () {
+        downloader.on('progress', () =>{
             LOG.info('progress', downloader.progressAmount, downloader.progressTotal);
+            let progress = downloader.progressTotal ? downloader.progressAmount / downloader.progressTotal * 100 : 0;
+            progress = `${Math.round(progress)}% (${Math.round(downloader.progressAmount/1024/1024)}/${Math.round(downloader.progressTotal/1024/1024)}Mb)`;
+            limit.EVENTS.emit('progress:updated', progress);
         });
-        downloader.on('end', function () {
+        downloader.on('end', () => {
             LOG.info('done downloading');
             limit.EVENTS.emit('restore:completed', bucket);
         });
@@ -68,11 +74,11 @@ export class Sync {
             };
             LOG.info('list > params = ', params);
             let lister = s3Client().listObjects(params);
-            lister.on('error', function (err) {
+            lister.on('error', (err) => {
                 LOG.info('unable to list:', err.stack);
                 reject(err);
             });
-            lister.on('data', function (data) {
+            lister.on('data', (data) => {
                 LOG.info('data = ', data);
                 let result = [];
                 for (let prefix of data.CommonPrefixes) {
@@ -80,10 +86,10 @@ export class Sync {
                 }
                 resolve(result);
             });
-            lister.on('progress', function () {
+            lister.on('progress', () => {
                 LOG.info('progress', lister.progressAmount, lister.progressTotal);
             });
-            lister.on('end', function () {
+            lister.on('end', () => {
                 LOG.info('done listing');
             });
         });

@@ -9,17 +9,26 @@ export class Menu extends limit.Component {
     static get tagName() { return 'ui-menu'; }
 
     get template() { return template; }
-    get resource() { return { selectedBackup: '', displayHome: 'none', displayTabs: 'none', displayBackup: 'none', displayRestore: 'none', displaySchedule: 'none', displayLoader:'none' }; }
+    get resource() { return { selectedBackup: '', displayHome: 'none', displayTabs: 'none', displayBackup: 'none', displayRestore: 'none', displaySchedule: 'none', displayLoader:'none', loading: '', progress: '' }; }
 
     created() {
 
         let loaderElement = this.query('#loader');
-        LOADER.activate = () => {
+        LOADER.activate = (loading) => {
             this.model.displayLoader = '';
+            this.model.loading = loading === true ? 'Loading' : loading;
         }
         LOADER.deactivate = () => {
             this.model.displayLoader = 'none';
+            this.model.loading = '';
+            this.model.progress = '';
         }
+        // LOADER.progress = (progress) => {
+        //     this.model.progress = progress;
+        // }
+        limit.EVENTS.on('progress:updated', (progress) => {
+            this.model.progress = progress;
+        });
 
         this.parentElement.onclick = () => {
             limit.EVENTS.emit('body:clicked');
