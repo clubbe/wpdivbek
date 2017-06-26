@@ -17,12 +17,9 @@
 </div>
 <div class="ui basic attached segment" id="panel" style="padding-top:100px;padding-bottom:60px;border-bottom:0px">
     <h2>
-        {{#selectedBackup.group}}
-        <strong>{{selectedBackup.group}}</strong>
-        {{/selectedBackup.group}}
-        {{^selectedBackup.group}}
-        <strong>Backups</strong>
-        {{/selectedBackup.group}}
+        {{#selectedBackup.group}} <strong>{{selectedBackup.group}}</strong> {{/selectedBackup.group}}
+        <!-- -->
+        {{^selectedBackup.group}} <strong>Backups</strong> {{/selectedBackup.group}}
     </h2>
     <div class="ui divider"></div>
     <ui-home style="display:{{displayHome}}"></ui-home>
