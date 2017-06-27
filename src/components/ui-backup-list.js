@@ -25,6 +25,7 @@ export class BackupList extends limit.Component {
                 for (let file of this.model.files) {
                     if (file.uuid === uuid) {
                         FILES.delete(file.absolutePath);
+                        limit.EVENTS.emit('file:removed', file);
                         break;
                     }
                     index++;
@@ -65,7 +66,10 @@ export class BackupList extends limit.Component {
                     file.timestamp = Formatter.formatTime(file.modifyTime + '');
                     file.group = this.selectedBackup.group;
                     FILES.put(file.absolutePath, file)
-                        .then((record) => { this.model.files.push(record); })
+                        .then((record) => {
+                            this.model.files.push(record);
+                            limit.EVENTS.emit('file:saved', record);
+                        })
                         .catch((error) => { LOG.error(error); });
                 });
             }
