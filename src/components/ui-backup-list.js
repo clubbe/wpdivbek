@@ -5,6 +5,7 @@ import getSize from 'get-folder-size';
 import { FILES } from '../resources/files';
 import { BACKUPS } from '../resources/backups';
 import uuid from 'uuid';
+import { Formatter } from '../utils/formatter';
 
 const LOG = limit.Logger.get('BackupList');
 
@@ -59,8 +60,9 @@ export class BackupList extends limit.Component {
                 getSize(file.absolutePath, (err, fileSize) => {
                     if (err) { throw err; }
                     file.uuid = uuid.v4();
-                    file.size = formatSize(fileSize);
-                    file.timestamp = formatTime(file.modifyTime + '');
+                    file.sizeInBytes = fileSize;
+                    file.size = Formatter.formatSize(fileSize);
+                    file.timestamp = Formatter.formatTime(file.modifyTime + '');
                     file.group = this.selectedBackup.group;
                     FILES.put(file.absolutePath, file)
                         .then((record) => { this.model.files.push(record); })
@@ -69,28 +71,4 @@ export class BackupList extends limit.Component {
             }
         });
     }
-}
-
-function formatSize(value) {
-    let size;
-    let sizes = ['b', 'kb', 'Mb', 'Gb', 'Tb'];
-    if (!value) {
-        size = value + ` ${sizes[0]}`;
-    } else {
-        let s = 0;
-        let i = sizes.length - 1;
-        while (s === 0) {
-            size = (value / (Math.pow(1024, i--))).toFixed(2);
-            s = Math.floor(size);
-            if (s !== 0) {
-                size = size + ` ${sizes[i + 1]}`;
-            }
-        }
-    }
-    return size;
-}
-
-function formatTime(value) {
-    let split = value.split(' ');
-    return `${split[0]} ${split[1]} ${split[2]} ${split[3]} ${split[4]}`;
 }

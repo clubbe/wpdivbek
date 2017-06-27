@@ -3,13 +3,16 @@ import s3 from 's3';
 import path from 'path';
 import { CONF } from './conf';
 import dateFormat from 'dateformat';
+import { Formatter } from './utils/formatter';
 
 const LOG = limit.Logger.get('Sync');
 
 export class Sync {
 
+    // TODO(CL): progress not working as expected - find bug and fix
     static backup(backup, bucket) {
-        let folders = backup.files;
+        const folders = backup.files;
+        const reporter = new ProgressReporter(folders);
         let count = folders.length;
         for (let folder of folders) {
             let temp = folder.absolutePath.split(path.sep);
@@ -32,9 +35,7 @@ export class Sync {
                 LOG.error('unable to backup:', err.stack);
             });
             uploader.on('progress', () => {
-                let progress = uploader.progressTotal ? uploader.progressAmount / uploader.progressTotal * 100 : 0;
-                progress = `${Math.round(progress)}% (${Math.round(uploader.progressAmount / 1024 / 1024)}/${Math.round(uploader.progressTotal / 1024 / 1024)}Mb)`;
-                limit.EVENTS.emit('progress:updated', progress);
+                reporter.reportProgress(folder.absolutePath, uploader.progressAmount);
             });
             uploader.on('end', () => {
                 if (--count === 0) {
@@ -97,4 +98,33 @@ function s3Client() {
             secretAccessKey: CONF.key
         },
     });
+}
+
+class ProgressReporter {
+
+    constructor(files) {
+        this.total = 0;
+        this.progress = {};
+        for (let file of files) {
+            this.total += file.sizeInBytes;
+            this.progress[file.absolutePath] = 0;
+        }
+    }
+
+    reportProgress(key, amount) {
+        this.progress[key] = amount;
+        let totalProgress = this.totalProgress;
+        let progress = this.total ? totalProgress / this.total * 100 : 0;
+        let formattedTotal = Formatter.formatSize(this.total);
+        let formattedProgress = Formatter.formatSizeToUnit(totalProgress, formattedTotal.split(' ')[1]);
+        limit.EVENTS.emit('progress:updated', `${Math.round(progress)}% (${formattedProgress}/${formattedTotal})`);
+    }
+
+    get totalProgress() {
+        let totalProgress = 0;
+        for (let prop in this.progress) {
+            totalProgress += this.progress[prop];
+        }
+        return totalProgress;
+    }
 }
