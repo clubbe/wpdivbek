@@ -1,6 +1,6 @@
 {
   "name": "wpdivbek",
-  "description": "welkom poes die is vir backup en kak",
+  "description": "Backup and Restore - wpdivbek",
   "main": "app/background.js",
   "authors": [
     "C Lubbe <carel@zailab.com>"

@@ -9,7 +9,6 @@ const LOG = limit.Logger.get('Sync');
 
 export class Sync {
 
-    // TODO(CL): progress not working as expected - find bug and fix
     static backup(backup, bucket) {
         const folders = backup.files;
         const reporter = new ProgressReporter(folders);
