@@ -16,16 +16,11 @@ export class Restore extends limit.Component {
 
         this.onclick = (event) => {
             if (event.path && event.path[0] && event.path[0].id && event.path[0].id.indexOf && event.path[0].id.indexOf('restore-') === 0) {
-
                 let file = this.query('ui-file').value;
                 if (!file) {
                     return;
                 }
-                LOG.info('file = ', file);
-
                 let index = event.path[0].id.replace('restore-', '');
-                LOG.info('index = ', index);
-
                 LOADER.loading = 'Downloading';
                 Sync.restore(file, this.model.bucket, this.model.snapshots[index]);
             }
@@ -75,7 +70,6 @@ export class Restore extends limit.Component {
                 });
         });
 
-        LOG.info('home:selected');
         limit.EVENTS.on('home:selected', (backup) => {
             this.model.loading = false;
             this.model.snapshots = null;

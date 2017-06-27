@@ -1,6 +1,7 @@
 import limit from 'limit-framework';
 import COMPONENTS from './components/index';
 import { Runner } from './runner';
+import { LOADER } from './loader';
 
 limit.Logger.useDefaults();
 limit.Logger.setLevel(limit.Logger.INFO);
@@ -28,6 +29,14 @@ document.body.ondrop = (e) => {
     limit.EVENTS.emit('files:dropped', e.dataTransfer.files);
     return false;
 };
+
+// window.onbeforeunload = (e) => {
+//     console.log('onbeforeunload > LOADER.isLoading ', LOADER.isLoading);
+//     if (LOADER.isLoading) {
+//         return false;
+//     }
+//     return true;
+// };
 
 // let menu = document.createElement('ui-menu');
 // console.log('menu = ', menu);

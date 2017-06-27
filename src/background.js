@@ -65,8 +65,9 @@ var shouldQuit = app.makeSingleInstance(function(commandLine, workingDirectory) 
 });
 
 if (shouldQuit) {
+
   app.quit();
-}else{
+} else {
 
     app.on('ready', () => {
         setApplicationMenu();
@@ -104,5 +105,4 @@ if (shouldQuit) {
     app.on('window-all-closed', () => {
         app.quit();
     });
-
 }

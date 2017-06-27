@@ -21,7 +21,7 @@ export class Backup extends limit.Component {
             };
         });
 
-        limit.EVENTS.on('backup:completed', () => {
+        limit.EVENTS.on('backup:completed', (bucket) => {
             LOADER.loading = false;
         });
 
@@ -33,7 +33,6 @@ export class Backup extends limit.Component {
             this.selectedBackup = backup;
         });
 
-        LOG.info('home:selected');
         limit.EVENTS.on('home:selected', (backup) => {
             this.selectedBackup = undefined;
         });
