@@ -4,6 +4,7 @@ import path from 'path';
 import { CONF } from './conf';
 import dateFormat from 'dateformat';
 import { Formatter } from './utils/formatter';
+import { Report } from './report';
 
 const LOG = limit.Logger.get('Sync');
 
@@ -29,17 +30,26 @@ export class Sync {
                     Prefix: prefix
                 }
             };
+            Report.log('backup', 'start', folder.absolutePath);
             let uploader = s3Client().uploadDir(params);
             uploader.on('error', (err) => {
+                Report.log('backup', 'error', `${folder.absolutePath} : ${err}`);
                 LOG.error('unable to backup:', err.stack);
             });
             uploader.on('progress', () => {
                 reporter.reportProgress(folder.absolutePath, uploader.progressAmount);
             });
             uploader.on('end', () => {
+                Report.log('backup', 'end', `${folder.absolutePath}`);
                 if (--count === 0) {
                     limit.EVENTS.emit('backup:completed', bucket);
                 }
+            });
+            uploader.on('fileUploadStart', (localFilePath) => {
+                Report.log('backup', 'file:start', `${folder.absolutePath} : ${localFilePath}`);
+            });
+            uploader.on('fileUploadEnd', (localFilePath) => {
+                Report.log('backup', 'file:end', `${folder.absolutePath} : ${localFilePath}`);
             });
         }
     }
