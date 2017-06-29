@@ -128,8 +128,8 @@ class ProgressReporter {
         let progress = this.total ? totalProgress / this.total * 100 : 0;
         // let formattedTotal = Formatter.formatSize(this.total);
         // let formattedProgress = Formatter.formatSizeToUnit(totalProgress, formattedTotal.split(' ')[1]);
-        let formattedTotal = Formatter.formatSizeToUnit(totalProgress, 'Mb');
         let formattedProgress = Formatter.formatSizeToUnit(totalProgress, 'Mb');
+        let formattedTotal = Formatter.formatSizeToUnit(this.total, 'Mb');
         limit.EVENTS.emit('progress:updated', `${Math.round(progress)}% (${formattedProgress}/${formattedTotal}Mb)`);
     }
 
