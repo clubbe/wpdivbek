@@ -38,6 +38,10 @@ export class Restore extends limit.Component {
             LOADER.loading = false;
         });
 
+        limit.EVENTS.on('restore:erred', () => {
+            LOADER.loading = false;
+        });
+
         limit.EVENTS.on('backup:completed', (group) => {
             if (this.model.bucket && this.model.bucket === group) {
                 this.model.loading = true;

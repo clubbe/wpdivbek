@@ -30,26 +30,27 @@ export class Sync {
                     Prefix: prefix
                 }
             };
-            Report.log('backup', 'start', folder.absolutePath);
+            Report.log('backup', bucket, 'start', folder.absolutePath);
             let uploader = s3Client().uploadDir(params);
             uploader.on('error', (err) => {
-                Report.log('backup', 'error', `${folder.absolutePath} : ${err}`);
+                Report.log('backup', bucket, 'error', `${folder.absolutePath} : ${err}`);
                 LOG.error('unable to backup:', err.stack);
+                limit.EVENTS.emit('backup:erred', err);
             });
             uploader.on('progress', () => {
                 reporter.reportProgress(folder.absolutePath, uploader.progressAmount);
             });
             uploader.on('end', () => {
-                Report.log('backup', 'end', `${folder.absolutePath}`);
+                Report.log('backup', bucket, 'end', `${folder.absolutePath}`);
                 if (--count === 0) {
                     limit.EVENTS.emit('backup:completed', bucket);
                 }
             });
             uploader.on('fileUploadStart', (localFilePath) => {
-                Report.log('backup', 'file:start', `${folder.absolutePath} : ${localFilePath}`);
+                Report.log('backup', bucket, 'file:start', `${folder.absolutePath} : ${localFilePath}`);
             });
             uploader.on('fileUploadEnd', (localFilePath) => {
-                Report.log('backup', 'file:end', `${folder.absolutePath} : ${localFilePath}`);
+                Report.log('backup', bucket, 'file:end', `${folder.absolutePath} : ${localFilePath}`);
             });
         }
     }
@@ -65,6 +66,7 @@ export class Sync {
         let downloader = s3Client().downloadDir(params);
         downloader.on('error', (err) => {
             LOG.error('unable to restore:', err.stack);
+            limit.EVENTS.emit('restore:erred', err);
         });
         downloader.on('progress', () => {
             let progress = downloader.progressTotal ? downloader.progressAmount / downloader.progressTotal * 100 : 0;

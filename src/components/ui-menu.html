@@ -1,5 +1,8 @@
 <style>
     @import "components/semantic/dist/semantic.css";
+    .dead-space {
+        height: 45%;
+    }
 </style>
 <div class="ui top fixed menu">
     <a class="item" id="home">
@@ -27,6 +30,19 @@
     <ui-restore style="display:{{displayRestore}}"></ui-restore>
     <ui-schedule style="display:{{displaySchedule}}"></ui-schedule>
 </div>
-<div class="ui inverted dimmer active" style="display:{{displayLoader}}" id="loader">
+<div class="ui inverted dimmer" style="display:{{displayLoader}}" id="loader">
     <div class="ui text loader">{{loading}}... {{progress}}</div>
+    <!--<div class="dead-space"></div>
+    <div class="ui container">
+        <div class="ui error message">
+            <i class="close icon"></i>
+            <div class="header">
+                There were some errors with your submission
+            </div>
+            <ul class="list">
+                <li>You must include both a upper and lower case letters in your password.</li>
+                <li>You need to select your home country.</li>
+            </ul>
+        </div>
+    </div>-->
 </div>

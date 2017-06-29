@@ -6,31 +6,43 @@ import dateFormat from 'dateformat';
 const dir = path.join(homedir(), '.wpdivbek');
 const dirReport = path.join(dir, 'reports');
 
-function file() {
-
+function file(fileName) {
   if (fs.existsSync(dir) === false) {
     fs.mkdirSync(dir);
   }
-
   if (fs.existsSync(dirReport) === false) {
     fs.mkdirSync(dirReport);
   }
-
-  const file = path.join(dirReport, `${dateFormat(new Date(), 'yyyymmdd')}.txt`);
-  if (fs.existsSync(file) === false) {
-    fs.writeFileSync(file, '');
-  }
-
-  return file;
+  return path.join(dirReport, `${fileName}.txt`);
 }
 
-function now() {
-  return dateFormat(new Date(), 'isoDateTime');
+function date() {
+  return new Date();
 }
+
+function now(date) {
+  return dateFormat(date, 'isoDateTime');
+}
+
+function today(date) {
+  return dateFormat(date, 'yyyymmdd');
+}
+
+let REPORT = {
+  date: undefined,
+  file: undefined
+};
 
 export class Report {
 
-  static log(type, state, note) {
-    fs.appendFileSync(file(), `[${now()}] ${type} ${state} ${note}\r\n`);
+  static log(type, label, state, note) {
+    const date = date();
+    const today = today(date);
+    const now = now(date);
+    if (!REPORT.file || REPORT.date !== today) {
+      REPORT.file = file(today);
+      REPORT.date = today;
+    }
+    fs.appendFileSync(REPORT.file, `[${now}] ${type} ${label} ${state} ${note}\r\n`);
   }
 }

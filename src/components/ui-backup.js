@@ -27,6 +27,10 @@ export class Backup extends limit.Component {
             LOADER.loading = false;
         });
 
+        limit.EVENTS.on('backup:erred', (bucket) => {
+            LOADER.loading = false;
+        });
+
         limit.EVENTS.on('files:dropped', (files) => {
             limit.EVENTS.emit('files:added', files);
         });
