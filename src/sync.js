@@ -126,9 +126,11 @@ class ProgressReporter {
         this.progress[key] = amount;
         let totalProgress = this.totalProgress;
         let progress = this.total ? totalProgress / this.total * 100 : 0;
-        let formattedTotal = Formatter.formatSize(this.total);
-        let formattedProgress = Formatter.formatSizeToUnit(totalProgress, formattedTotal.split(' ')[1]);
-        limit.EVENTS.emit('progress:updated', `${Math.round(progress)}% (${formattedProgress}/${formattedTotal})`);
+        // let formattedTotal = Formatter.formatSize(this.total);
+        // let formattedProgress = Formatter.formatSizeToUnit(totalProgress, formattedTotal.split(' ')[1]);
+        let formattedTotal = Formatter.formatSizeToUnit(totalProgress, 'Mb');
+        let formattedProgress = Formatter.formatSizeToUnit(totalProgress, 'Mb');
+        limit.EVENTS.emit('progress:updated', `${Math.round(progress)}% (${formattedProgress}/${formattedTotal}Mb)`);
     }
 
     get totalProgress() {
