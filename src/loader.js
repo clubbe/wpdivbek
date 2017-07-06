@@ -11,6 +11,10 @@ class Loader {
   deactivate() {
     console.warn('deactivate not set');
   }
+
+  progress() {
+    console.warn('progress not set');
+  }
   
   set loading(loading) {
     if (loading) {

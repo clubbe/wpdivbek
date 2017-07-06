@@ -1,143 +1,158 @@
 import limit from 'limit-framework';
-import s3 from 's3';
 import path from 'path';
-import { CONF } from './conf';
 import dateFormat from 'dateformat';
 import { Formatter } from './utils/formatter';
-import { Report } from './report';
+import { LOADER } from './loader';
+import { S3Connector, S3Parameters } from './utils/connector';
+import queue from 'queue';
 
 const LOG = limit.Logger.get('Sync');
+const CONNECTER = new S3Connector();
 
 export class Sync {
 
-    static backup(backup, bucket) {
-        const folders = backup.files;
-        const reporter = new ProgressReporter(folders);
-        let count = folders.length;
-        for (let folder of folders) {
-            let temp = folder.absolutePath.split(path.sep);
-            let dirs = [dateFormat(new Date(), 'yyyymmdd')];
-            for (let dir of temp) {
-                if (dir.indexOf(':') === -1) {
-                    dirs.push(dir);
-                }
-            }
-            let prefix = dirs.join('/');
-            let params = {
-                localDir: folder.absolutePath,
-                s3Params: {
-                    Bucket: bucket,
-                    Prefix: prefix
-                }
-            };
-            Report.log('backup', bucket, 'start', folder.absolutePath);
-            let uploader = s3Client().uploadDir(params);
-            uploader.on('error', (err) => {
-                Report.log('backup', bucket, 'error', `${folder.absolutePath} : ${err}`);
-                LOG.error('unable to backup:', err.stack);
-                limit.EVENTS.emit('backup:erred', err);
-            });
-            uploader.on('progress', () => {
-                reporter.reportProgress(folder.absolutePath, uploader.progressAmount);
-            });
-            uploader.on('end', () => {
-                Report.log('backup', bucket, 'end', `${folder.absolutePath}`);
-                if (--count === 0) {
-                    limit.EVENTS.emit('backup:completed', bucket);
-                }
-            });
-            uploader.on('fileUploadStart', (localFilePath) => {
-                Report.log('backup', bucket, 'file:start', `${folder.absolutePath} : ${localFilePath}`);
-            });
-            uploader.on('fileUploadEnd', (localFilePath) => {
-                Report.log('backup', bucket, 'file:end', `${folder.absolutePath} : ${localFilePath}`);
-            });
-        }
-    }
-
-    static restore(folder, bucket, prefix) {
-        let params = {
-            localDir: folder,
-            s3Params: {
-                Bucket: bucket,
-                Prefix: prefix
-            }
+  static backup(folders, bucket) {
+    const reporter = new ProgressReporter(folders);
+    const q = queue({ concurrency: 1 });
+    let count = 0;
+    for (let folder of folders) {
+      const dir = folder.absolutePath;
+      const prefix = makePrefix(dir);
+      q.push((cb) => {
+        count++;
+        const callback = (err, result) => {
+          cb(err, result);
+          return null;
         };
-        let downloader = s3Client().downloadDir(params);
-        downloader.on('error', (err) => {
-            LOG.error('unable to restore:', err.stack);
-            limit.EVENTS.emit('restore:erred', err);
-        });
-        downloader.on('progress', () => {
-            let progress = downloader.progressTotal ? downloader.progressAmount / downloader.progressTotal * 100 : 0;
-            progress = `${Math.round(progress)}% (${Math.round(downloader.progressAmount / 1024 / 1024)}/${Math.round(downloader.progressTotal / 1024 / 1024)}Mb)`;
-            limit.EVENTS.emit('progress:updated', progress);
-        });
-        downloader.on('end', () => {
-            limit.EVENTS.emit('restore:completed', bucket);
-        });
+        CONNECTER.upload( //
+          buildSyncParams(dir, bucket, prefix), //
+          (progressAmount) => { reporter.uploadProgress(dir, progressAmount, count); }
+        ) //
+          .then(() => { return callback(); })
+          .catch((err) => { callback(err); });
+      });
     }
+    q.start((err) => {
+      LOADER.loading = false;
+      limit.EVENTS.emit('backup:completed', bucket);
+    });
+  }
 
-    static list(bucket) {
-        return new Promise((resolve, reject) => {
-            let params = {
-                s3Params: {
-                    Bucket: bucket,
-                    Delimiter: '/',
-                    MaxKeys: 10
-                }
-            };
-            let lister = s3Client().listObjects(params);
-            lister.on('error', (err) => {
-                reject(err);
-            });
-            lister.on('data', (data) => {
-                let result = [];
-                for (let prefix of data.CommonPrefixes) {
-                    result.push(prefix.Prefix);
-                }
-                resolve(result);
-            });
-        });
-    }
+  static restore(folder, bucket, prefix) {
+    const reporter = new ProgressReporter();
+    const callback = (err, result) => {
+      if (err) LOG.error('unable to restore:', err.stack);
+      LOADER.loading = false;
+      return null;
+    };
+    CONNECTER.download( //
+      buildSyncParams(folder, bucket, prefix), //
+      (progressAmount, progressTotal) => {
+        reporter.downloadProgress(progressAmount, progressTotal);
+      }
+    ) //
+      .then(() => { return callback(); })
+      .catch((err) => { callback(err); });
+  }
+
+  static list(bucket) {
+    return CONNECTER.list(buildListParams(bucket, '/', 10));
+  }
 }
 
-function s3Client() {
-    return s3.createClient({
-        s3Options: {
-            accessKeyId: CONF.id,
-            secretAccessKey: CONF.key
-        },
-    });
+function makePrefix(dir) {
+  let temp = dir.split(path.sep);
+  let dirs = [dateFormat(new Date(), 'yyyymmdd')];
+  for (let dir of temp) {
+    if (dir.indexOf(':') === -1) {
+      dirs.push(dir);
+    }
+  }
+  return dirs.join('/');
+}
+
+function buildSyncParams(dir, bucket, prefix) {
+  return new S3Parameters.Builder() //
+    .localDir(dir) //
+    .s3Params({
+      Bucket: bucket,
+      Prefix: prefix
+    }) //
+    .build();
+}
+
+function buildListParams(bucket, delimiter, maxKeys) {
+  return new S3Parameters.Builder() //
+    .s3Params({
+      Bucket: bucket,
+      Delimiter: delimiter,
+      MaxKeys: maxKeys
+    }) //
+    .build();
 }
 
 class ProgressReporter {
 
-    constructor(files) {
-        this.total = 0;
-        this.progress = {};
-        for (let file of files) {
-            this.total += file.sizeInBytes;
-            this.progress[file.absolutePath] = 0;
-        }
+  constructor(files) {
+    if (files) {
+      this.total = 0;
+      this.progress = {};
+      this.totalCount = files.length;
+      for (let file of files) {
+        this.total += file.sizeInBytes;
+        this.progress[file.absolutePath] = 0;
+      }
     }
+  }
 
-    reportProgress(key, amount) {
-        this.progress[key] = amount;
-        let totalProgress = this.totalProgress;
-        let progress = this.total ? totalProgress / this.total * 100 : 0;
-        // let formattedTotal = Formatter.formatSize(this.total);
-        // let formattedProgress = Formatter.formatSizeToUnit(totalProgress, formattedTotal.split(' ')[1]);
-        let formattedProgress = Formatter.formatSizeToUnit(totalProgress, 'Mb');
-        let formattedTotal = Formatter.formatSizeToUnit(this.total, 'Mb');
-        limit.EVENTS.emit('progress:updated', `${Math.round(progress)}% (${formattedProgress}/${formattedTotal}Mb)`);
+  uploadProgress(key, amount, count) {
+    if (!amount) {
+      if (!this.idle) {
+        this.idle = true;
+        LOADER.loading = 'Calculating';
+      }
+    } else {
+      if (this.idle) {
+        this.idle = false;
+        LOADER.loading = 'Uploading';
+      }
     }
+    this.progress[key] = amount;
+    let totalProgress = this.totalProgress;
+    let progress = this.total ? totalProgress / this.total * 100 : 0;
+    let formattedProgress = Formatter.formatSizeToUnit(totalProgress, 'Mb');
+    let formattedTotal = Formatter.formatSizeToUnit(this.total, 'Mb');
+    let message = `${Math.round(progress)}% (${formattedProgress}/${formattedTotal}Mb)`;
+    if (count !== undefined) {
+      message = `${count}/${this.totalCount} - ${message}`;
+    }
+    LOADER.progress(message);
+  }
 
-    get totalProgress() {
-        let totalProgress = 0;
-        for (let prop in this.progress) {
-            totalProgress += this.progress[prop];
-        }
-        return totalProgress;
+  downloadProgress(amount, total) {
+    if (!amount) {
+      if (!this.idle) {
+        this.idle = true;
+        LOADER.loading = 'Calculating';
+      }
+    } else {
+      if (this.idle) {
+        this.idle = false;
+        LOADER.loading = 'Downloading';
+      }
     }
+    let progress = total ? amount / total * 100 : 0;
+    let formattedProgress = Formatter.formatSizeToUnit(amount, 'Mb');
+    let formattedTotal = Formatter.formatSizeToUnit(total, 'Mb');
+    let message = `${Math.round(progress)}% (${formattedProgress}/${formattedTotal}Mb)`;
+    LOADER.progress(message);
+  }
+
+  get totalProgress() {
+    let totalProgress = 0;
+    for (let prop in this.progress) {
+      totalProgress += this.progress[prop];
+    }
+    return totalProgress;
+  }
 }

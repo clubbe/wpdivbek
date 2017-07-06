@@ -23,12 +23,9 @@ export class Menu extends limit.Component {
             this.model.loading = '';
             this.model.progress = '';
         }
-        // LOADER.progress = (progress) => {
-        //     this.model.progress = progress;
-        // }
-        limit.EVENTS.on('progress:updated', (progress) => {
+        LOADER.progress = (progress) => {
             this.model.progress = progress;
-        });
+        }
 
         this.parentElement.onclick = () => {
             limit.EVENTS.emit('body:clicked');
@@ -52,9 +49,7 @@ export class Menu extends limit.Component {
             this.model.selectedBackup = backup;
             this.model.displayTabs = '';
             this.showBackupView();
-
             this.elements.home.className = this.elements.home.className.replace(' active', '');
-            
             LOADER.loading = true;
         });
     }

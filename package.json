@@ -37,6 +37,7 @@
     "jquery": "^3.2.1",
     "limit-framework": "file:scratch/limit-framework",
     "node-schedule": "^1.2.3",
+    "queue": "^4.2.1",
     "s3": "^4.4.0",
     "uuid": "^3.0.1"
   },
