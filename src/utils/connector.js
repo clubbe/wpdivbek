@@ -16,7 +16,7 @@ export class S3Connector {
     });
   }
 
-  upload(params, progressCallback) {
+  upload(params, progressCallback, fileCompletedCallback) {
     return new Promise((resolve, reject) => {
       Report.log('upload', params.s3Params.Bucket, 'start', params.localDir);
       const worker = this.client.uploadDir(params);
@@ -31,6 +31,9 @@ export class S3Connector {
       const progress = () => {
         progressCallback(worker.progressAmount);
       }
+      worker.on(this.EVENT_NAMES.FILE_UPLOAD_END, (data, localFileStat, fullPath, fullKey) => {
+        fileCompletedCallback(data, localFileStat, fullPath, fullKey);
+      });
       this.registerEvents(worker, end, error, progress);
       return worker;
     });
@@ -39,24 +42,48 @@ export class S3Connector {
   download(params, progressCallback) {
     return new Promise((resolve, reject) => {
       const worker = this.client.downloadDir(params);
-      this.registerEvents(worker, resolve, reject, () => { progressCallback(worker.progressAmount, worker.progressTotal); });
+      const progress = () => {
+        progressCallback && progressCallback(worker.progressAmount, worker.progressTotal);
+      };
+      this.registerEvents(worker, resolve, reject, progress);
       return worker;
     });
   }
 
-  list(params) {
+  versions(params) {
     return new Promise((resolve, reject) => {
-      const worker = this.client.listObjects(params);
-      worker.on(this.EVENT_NAMES.ERROR, (err) => {
-        reject(err);
-      });
-      worker.on(this.EVENT_NAMES.DATA, (data) => {
-        const result = [];
-        for (let prefix of data.CommonPrefixes) {
-          result.push(prefix.Prefix);
+      this.client.s3.listObjectVersions(params, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
         }
-        resolve(result);
       });
+    });
+  }
+
+  empty(params) {
+    const toDeleteObjects = (objects) => {
+      const results = [];
+      for (let object of objects) {
+        results.push({ Key: object.Key, VersionId: object.VersionId });
+      }
+      return results;
+    };
+    return new Promise((resolve, reject) => {
+      return this.versions(params)
+        .then((data) => {
+          let deleteList = toDeleteObjects(data.DeleteMarkers);
+          deleteList = deleteList.concat(toDeleteObjects(data.Versions));
+          this.client.s3.deleteObjects({ Bucket: params.Bucket, Delete: { Objects: deleteList } }, (err, data) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+            resolve(data);
+          });
+        })
+        .catch(reject);
     });
   }
 
@@ -100,6 +127,14 @@ export class S3Parameters {
     return this.params.s3Params;
   }
 
+  set getS3Params(getS3Params) {
+    this.params.getS3Params = getS3Params;
+  }
+
+  get getS3Params() {
+    return this.params.getS3Params;
+  }
+
   static get Builder() {
 
     return class ParametersBuilder {
@@ -115,6 +150,11 @@ export class S3Parameters {
 
       s3Params(s3Params) {
         this.parameters.s3Params = s3Params;
+        return this;
+      }
+
+      getS3Params(getS3Params) {
+        this.parameters.getS3Params = getS3Params;
         return this;
       }
 

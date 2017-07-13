@@ -50,7 +50,6 @@ export class Menu extends limit.Component {
             this.model.displayTabs = '';
             this.showBackupView();
             this.elements.home.className = this.elements.home.className.replace(' active', '');
-            LOADER.loading = true;
         });
     }
 

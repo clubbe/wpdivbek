@@ -2,6 +2,10 @@ import limit from 'limit-framework';
 import COMPONENTS from './components/index';
 import { Runner } from './runner';
 import { LOADER } from './loader';
+import http from 'http';
+import https from 'https';
+
+http.globalAgent.maxSockets = https.globalAgent.maxSockets = 20; 
 
 limit.Logger.useDefaults();
 limit.Logger.setLevel(limit.Logger.INFO);

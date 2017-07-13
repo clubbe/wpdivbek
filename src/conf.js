@@ -4,7 +4,6 @@ import homedir from 'homedir';
 import path from 'path';
 
 const LOG = limit.Logger.get('Conf');
-
 const dir = path.join(homedir(), '.wpdivbek');
 const file = path.join(homedir(), '.wpdivbek', 's3.conf');
 

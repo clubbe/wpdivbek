@@ -38,7 +38,7 @@
     "limit-framework": "file:scratch/limit-framework",
     "node-schedule": "^1.2.3",
     "queue": "^4.2.1",
-    "s3": "^4.4.0",
+    "s3": "git+https://github.com/clubbe/node-s3-client.git",
     "uuid": "^3.0.1"
   },
   "devDependencies": {

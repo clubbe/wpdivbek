@@ -21,6 +21,33 @@ export class Backup extends limit.Component {
       };
     });
 
+    // this.find('.database.icon').then((totalIcon) => {
+    //   let clicked, execute;
+    //   const reset = () => {
+    //     let clicked = false;
+    //     let execute = false;
+    //   }
+    //   const run = () => {
+    //     if (execute) {
+    //       return;
+    //     }
+    //     if (clicked) {
+    //       clicked = false;
+    //       execute = true;
+    //     } else {
+    //       clicked = true;
+    //     }
+    //     if (execute) {
+    //       Sync.clear(this.selectedBackup.group)
+    //         .then(() => { reset(); })
+    //         .catch(() => { reset(); });
+    //     }
+    //   };
+    //   reset();
+    //   totalIcon.oncontextmenu = () => { run(); };
+    //   totalIcon.onclick = () => { run(); };
+    // });
+
     limit.EVENTS.on('files:dropped', (files) => {
       limit.EVENTS.emit('files:added', files);
     });

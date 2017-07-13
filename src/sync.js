@@ -5,6 +5,7 @@ import { Formatter } from './utils/formatter';
 import { LOADER } from './loader';
 import { S3Connector, S3Parameters } from './utils/connector';
 import queue from 'queue';
+import { VERSIONS } from './resources/versions';
 
 const LOG = limit.Logger.get('Sync');
 const CONNECTER = new S3Connector();
@@ -13,56 +14,140 @@ export class Sync {
 
   static backup(folders, bucket) {
     const reporter = new ProgressReporter(folders);
+    const store = new VersionStore(bucket);
     const q = queue({ concurrency: 1 });
     let count = 0;
     for (let folder of folders) {
-      const dir = folder.absolutePath;
-      const prefix = makePrefix(dir);
       q.push((cb) => {
         count++;
         const callback = (err, result) => {
           cb(err, result);
           return null;
         };
-        CONNECTER.upload( //
-          buildSyncParams(dir, bucket, prefix), //
-          (progressAmount) => { reporter.uploadProgress(dir, progressAmount, count); }
-        ) //
+        const dir = folder.absolutePath;
+        uploadFolder(
+          buildSyncParams(dir, bucket, makePrefix(dir)),
+          (progress) => { reporter.uploadProgress(dir, progress, count); },
+          (key, tag, version, size) => { store.write(key, tag, version, size); }
+        )
           .then(() => { return callback(); })
           .catch((err) => { callback(err); });
       });
     }
     q.start((err) => {
-      LOADER.loading = false;
-      limit.EVENTS.emit('backup:completed', bucket);
+      const callback = (err, result) => {
+        LOADER.loading = false;
+        limit.EVENTS.emit('backup:completed', bucket);
+        return null;
+      };
+      if (err) {
+        LOG.error('backup > err = ', err);
+        return callback();
+      }
+      const preCondition = (localFile, s3Object, cb) => {
+        if (VERSIONS.file === localFile) cb(null, {});
+        else cb(null, null);
+      };
+      const dir = VERSIONS.dir;
+      uploadFolder(
+        buildConditionalSyncParams(dir, bucket, VERSIONS.dirName, preCondition),
+        (progress) => { reporter.uploadProgress(dir, progress); }
+      )
+        .then(() => { return callback(); })
+        .catch((err) => { callback(err); });
     });
   }
 
-  static restore(folder, bucket, prefix) {
+  static restore(folder, bucket, time) {
     const reporter = new ProgressReporter();
     const callback = (err, result) => {
       if (err) LOG.error('unable to restore:', err.stack);
       LOADER.loading = false;
       return null;
     };
-    CONNECTER.download( //
-      buildSyncParams(folder, bucket, prefix), //
-      (progressAmount, progressTotal) => {
-        reporter.downloadProgress(progressAmount, progressTotal);
+    const params = buildSyncParams(folder, bucket, '');
+    params.getS3Params = (localFile, s3Object, cb) => {
+      if (VERSIONS.key === s3Object.Key) {
+        cb(null, null);
+        return;
       }
-    ) //
-      .then(() => { return callback(); })
-      .catch((err) => { callback(err); });
+      VERSIONS.find(bucket, s3Object.Key, time)
+        .then((version) => { cb(null, version ? { VersionId: version.version } : null); })
+        .catch(cb);
+    };
+    VERSIONS.findAll(bucket, time)
+      .then((results) => {
+        params.allS3Objects = [];
+        for (let result of results) {
+          params.allS3Objects.push({
+            Key: result.key,
+            ETag: result.data.tag,
+            Size: result.data.size,
+            key: result.key
+          });
+        }
+        CONNECTER.download(
+          params,
+          (progressAmount, progressTotal) => { reporter.downloadProgress(progressAmount, progressTotal); }
+        )
+          .then(() => { return callback(); })
+          .catch((err) => { callback(err); });
+      });
   }
 
   static list(bucket) {
-    return CONNECTER.list(buildListParams(bucket, '/', 10));
+    return new Promise((resolve, reject) => {
+      LOADER.loading = true;
+      const callback = () => {
+        VERSIONS.reload();
+        return VERSIONS.get(bucket)
+          .then((record) => {
+            LOADER.loading = false;
+            let results = [];
+            for (let prop in record) {
+              results.push(prop);
+            }
+            resolve(results.reverse());
+          })
+          .catch((err) => {
+            LOADER.loading = false;
+            reject(err);
+          });
+      };
+      CONNECTER
+        .download(buildSyncParams(VERSIONS.dir, bucket, VERSIONS.dirName))
+        .then(callback)
+        .catch(callback);
+    });
   }
+
+  static clear(bucket) {
+    return new Promise((resolve, reject) => {
+      LOADER.loading = true;
+      CONNECTER.empty({ Bucket: bucket })
+        .then(() => {
+          LOADER.loading = false;
+          resolve();
+        })
+        .catch((err) => {
+          LOADER.loading = false;
+          reject(err);
+        });
+    });
+  }
+}
+
+function uploadFolder(params, uploadProgressedCallback, fileCompletedCallback) {
+  return CONNECTER.upload(
+    params,
+    (progressAmount) => { uploadProgressedCallback(progressAmount); },
+    (data, localFileStat, fullPath, fullKey) => { fileCompletedCallback && fileCompletedCallback(fullKey, data.ETag, data.VersionId, localFileStat.size); }
+  );
 }
 
 function makePrefix(dir) {
   let temp = dir.split(path.sep);
-  let dirs = [dateFormat(new Date(), 'yyyymmdd')];
+  let dirs = [];
   for (let dir of temp) {
     if (dir.indexOf(':') === -1) {
       dirs.push(dir);
@@ -72,22 +157,17 @@ function makePrefix(dir) {
 }
 
 function buildSyncParams(dir, bucket, prefix) {
-  return new S3Parameters.Builder() //
-    .localDir(dir) //
-    .s3Params({
-      Bucket: bucket,
-      Prefix: prefix
-    }) //
+  return new S3Parameters.Builder()
+    .localDir(dir)
+    .s3Params({ Bucket: bucket, Prefix: prefix })
     .build();
 }
 
-function buildListParams(bucket, delimiter, maxKeys) {
-  return new S3Parameters.Builder() //
-    .s3Params({
-      Bucket: bucket,
-      Delimiter: delimiter,
-      MaxKeys: maxKeys
-    }) //
+function buildConditionalSyncParams(dir, bucket, prefix, getS3Params) {
+  return new S3Parameters.Builder()
+    .localDir(dir)
+    .s3Params({ Bucket: bucket, Prefix: prefix })
+    .getS3Params(getS3Params)
     .build();
 }
 
@@ -119,6 +199,25 @@ class ProgressReporter {
     }
     this.progress[key] = amount;
     let totalProgress = this.totalProgress;
+
+    let bps = 0;
+    if (amount > 0) {
+      let timeInMillis = new Date().getTime();
+      let durationInMillis = 0;
+      if (this.previousTimeInMillis) {
+        durationInMillis = timeInMillis - this.previousTimeInMillis;
+      } else {
+        this.previousTimeInMillis = timeInMillis;
+        this.previousTotalProgress = totalProgress;
+      }
+      if (durationInMillis >= 1000) {
+        let progressDifference = totalProgress - this.previousTotalProgress;
+        bps = progressDifference * (1000 / durationInMillis);
+        this.previousTimeInMillis = timeInMillis;
+        this.previousTotalProgress = totalProgress;
+      }
+    }
+
     let progress = this.total ? totalProgress / this.total * 100 : 0;
     let formattedProgress = Formatter.formatSizeToUnit(totalProgress, 'Mb');
     let formattedTotal = Formatter.formatSizeToUnit(this.total, 'Mb');
@@ -126,6 +225,13 @@ class ProgressReporter {
     if (count !== undefined) {
       message = `${count}/${this.totalCount} - ${message}`;
     }
+    if (!this.mbps) {
+      this.mbps = '0.00';
+    }
+    if (bps > 0) {
+      this.mbps = (bps / 1024 / 1024).toFixed(2);
+    }
+    message = `${message} @ ${this.mbps}Mb/s`;
     LOADER.progress(message);
   }
 
@@ -154,5 +260,26 @@ class ProgressReporter {
       totalProgress += this.progress[prop];
     }
     return totalProgress;
+  }
+}
+
+class VersionStore {
+
+  constructor(ns) {
+    this.ns = ns;
+    this.date = dateFormat(new Date(), 'isoDateTime');
+    if (!VERSIONS.has(this.ns)) VERSIONS.put(this.ns, {});
+  }
+
+  write(key, tag, version, size) {
+    VERSIONS.get(this.ns)
+      .then((record) => {
+        let data = record[this.date];
+        if (!data) {
+          record[this.date] = data = {};
+        }
+        data[key] = { tag, version, size };
+        VERSIONS.set(this.ns, record);
+      });
   }
 }
